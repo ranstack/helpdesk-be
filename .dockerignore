@@ -1,0 +1,53 @@
+# Git
+.git/
+.gitignore
+
+# Documentation
+README.md
+*.md
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+
+# Test files
+*_test.go
+testdata/
+
+# Build artifacts
+bin/
+dist/
+build/
+
+# Development tools
+tmp/
+air.toml
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Vendor directory (usually want to exclude)
+vendor/
+
+# Go workspace
+go.work
+go.work.sum
