@@ -2,30 +2,56 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"log/slog"
+	"net/http"
+	"os"
+
 	"helpdesk/internal/config"
 	"helpdesk/internal/database"
-	"log"
-	"net/http"
+	"helpdesk/internal/features/category"
+	"helpdesk/internal/middleware"
 
 	"github.com/labstack/echo/v5"
 )
 
 func main() {
 	cfg := config.Load()
+
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+		Level: slog.LevelInfo,
+	}))
+
 	db := database.NewPostgres(cfg.DBConnString())
+	defer db.Close()
+
+	logger.Info("connected to database", "host", cfg.DBHost, "database", cfg.DBName)
 
 	e := echo.New()
 
-	e.GET("/health", func(c *echo.Context) error {
-		return c.String(http.StatusOK, "OK")
+	e.Use(middleware.Recovery(logger))
+	e.Use(middleware.Logger(logger))
+	e.Use(middleware.CORS())
+
+	categoryRepo := category.NewRepository(db)
+	categoryService := category.NewService(categoryRepo, logger)
+	categoryHandler := category.NewHandler(categoryService)
+
+	api := e.Group("/api/v1")
+
+	api.GET("/health", func(c *echo.Context) error {
+		return c.JSON(http.StatusOK, map[string]interface{}{
+			"status": "ok",
+			"app":    cfg.AppName,
+		})
 	})
 
+	category.RegisterRoutes(api, categoryHandler)
 	addr := ":" + cfg.AppPort
-	fmt.Println("Server running on", addr)
+	logger.Info("starting server", "address", addr, "app", cfg.AppName)
+	fmt.Printf("🚀 Server started on %s\n", addr)
 
 	if err := e.Start(addr); err != nil {
 		log.Fatal(err)
 	}
-
-	_ = db
 }

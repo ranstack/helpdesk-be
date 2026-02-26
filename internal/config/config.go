@@ -6,11 +6,9 @@ import (
 )
 
 type Config struct {
-	// App conf
 	AppName string
 	AppPort string
 
-	// Database conf
 	DBHost     string
 	DBPort     string
 	DBUser     string
