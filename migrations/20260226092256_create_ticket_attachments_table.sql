@@ -12,4 +12,4 @@ CREATE INDEX idx_attach_ticket ON ticket_attachments(ticket_id);
 CREATE INDEX idx_attach_type ON ticket_attachments(type);
 
 -- +goose Down
-SELECT 'down SQL query';
+DROP TABLE ticket_attachments;
