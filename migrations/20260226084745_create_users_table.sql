@@ -1,15 +1,14 @@
 -- +goose Up
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
-    name VARCHAR(50),
-    email VARCHAR(20) UNIQUE,
-    password VARCHAR(50),
+    name VARCHAR(50) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
     avatar_url TEXT DEFAULT NULL,
     phone VARCHAR(15) DEFAULT NULL,
-    role VARCHAR(10), --STAFF | IT | ADMIN
-    division_id INTEGER,
-    created_by INTEGER,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    role VARCHAR(10) NOT NULL, --STAFF | IT | ADMIN
+    division_id INT NOT NULL REFERENCES divisions(id),
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX idx_users_name ON users(name);
