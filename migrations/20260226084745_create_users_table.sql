@@ -1,6 +1,6 @@
 -- +goose Up
 CREATE TABLE users (
-    id UUID PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     name VARCHAR(50),
     email VARCHAR(20) UNIQUE,
     password VARCHAR(50),
