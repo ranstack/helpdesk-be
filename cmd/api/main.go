@@ -1,22 +1,31 @@
 package main
 
 import (
-	"log/slog"
+	"fmt"
+	"helpdesk/internal/config"
+	"helpdesk/internal/database"
+	"log"
 	"net/http"
 
 	"github.com/labstack/echo/v5"
 )
 
 func main() {
+	cfg := config.Load()
+	db := database.NewPostgres(cfg.DBConnString())
+
 	e := echo.New()
 
-	e.GET("/", hello)
+	e.GET("/health", func(c *echo.Context) error {
+		return c.String(http.StatusOK, "OK")
+	})
 
-	if err := e.Start(":8080"); err != nil {
-		slog.Error("failed to start server", "error", err)
+	addr := ":" + cfg.AppPort
+	fmt.Println("Server running on", addr)
+
+	if err := e.Start(addr); err != nil {
+		log.Fatal(err)
 	}
-}
 
-func hello(c *echo.Context) error {
-	return c.String(http.StatusOK, "Hello, World!")
+	_ = db
 }
