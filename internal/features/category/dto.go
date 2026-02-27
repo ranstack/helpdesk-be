@@ -39,11 +39,6 @@ type CategoryListFilter struct {
 	CreatedAt *time.Time
 }
 
-type CategoryListResponse struct {
-	Items      []CategoryResponse          `json:"items"`
-	Pagination response.PaginationResponse `json:"pagination"`
-}
-
 func (r *CreateCategoryRequest) Validate() error {
 	v := validator.New()
 

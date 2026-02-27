@@ -36,12 +36,19 @@
 - Error response: { success: false, error: { code, message, details } }.
 - Prefer reusing a shared response DTO per feature (for example, one `CategoryResponse`) to reduce boilerplate.
 - Add endpoint-specific response DTOs only when the response contract is intentionally different.
-- For paginated lists: use `response.PaginationResponse` from internal/utils/response for consistent metadata across features.
+- For paginated lists: use `response.ListResponse[T]` generic type from internal/utils/response for consistent structure and reduced duplication.
+  - Example: Service returns `*response.ListResponse[CategoryResponse]` with items array and pagination metadata.
+  - Eliminates feature-specific ListResponse types (e.g., CategoryListResponse, DivisionListResponse).
 - List endpoints should return { items: [], pagination: { page, limit, totalItems, totalPages } }.
 
 ## Validation
 - Use internal/utils/validator for request validation.
 - Return Validation errors with details map when invalid.
+- For enums, define constants and ValidValues map in models.go, then validate against it in dto.go.
+  - Example: `const (RoleAdmin = "ADMIN"; RoleIT = "IT"; RoleStaff = "STAFF")`
+  - Validate with: `if !ValidRoles[role] { v.AddError("role", "Must be one of: ADMIN, IT, STAFF") }`
+- For email validation, use `validator.ValidateEmail(email)` helper:
+  - Example: `if email != "" && !validator.ValidateEmail(email) { v.AddError("email", "Must be a valid email address") }`
 
 ## Pagination
 - Use query parameters: `page`, `limit` for pagination controls.
@@ -51,6 +58,7 @@
   - Call `query.NormalizePagination()` to get normalized page, limit, offset values.
   - Constants available: `response.DefaultPage=1`, `response.DefaultLimit=10`, `response.MaxLimit=100`
   - Use `response.ParseDate(dateStr)` helper for parsing date filters (returns *time.Time or error).
+  - Use `response.CalculateTotalPages(totalItems, limit)` helper to calculate total pages (handles zero case).
 - Repository: run COUNT query for total, then paginated SELECT with LIMIT/OFFSET.
 - Return response with items array + pagination metadata (page, limit, totalItems, totalPages).
 

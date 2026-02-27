@@ -106,6 +106,13 @@ internal/
   │       ├── repository.go    # Data access layer
   │       ├── routes.go        # Route definitions
   │       └── service.go       # Business logic layer
+  │   └── user/                # User feature (CRUD)
+  │       ├── dto.go           # Request/Response DTOs
+  │       ├── handler.go       # HTTP handlers
+  │       ├── models.go        # Domain models
+  │       ├── repository.go    # Data access layer
+  │       ├── routes.go        # Route definitions
+  │       └── service.go       # Business logic layer
   ├── middleware/
   │   ├── cors.go              # CORS middleware
   │   ├── logger.go            # Request logging
@@ -182,6 +189,27 @@ All endpoints are prefixed with `/api/v1`
 | `isActive` | boolean | Filter active/inactive divisions |
 | `createdAt` | string | Filter by creation date in `YYYY-MM-DD` |
 
+### User Management
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/users` | Create a new user |
+| GET | `/users` | Get all users |
+| GET | `/users/:id` | Get user by ID |
+| PATCH | `/users/:id` | Update user |
+| DELETE | `/users/:id` | Delete user |
+
+`GET /users` supports query parameters:
+
+| Query | Type | Description |
+|-------|------|-------------|
+| `page` | number | Page number (default `1`) |
+| `limit` | number | Items per page (default `10`, max `100`) |
+| `name` | string | Case-insensitive partial search by user name |
+| `role` | string | Filter by role (STAFF, IT, ADMIN) |
+| `divisionId` | number | Filter by division ID |
+| `isActive` | boolean | Filter active/inactive users |
+
 ### Health Check
 
 ```
@@ -217,6 +245,15 @@ The API uses standardized error responses with specific error codes:
 - `VALIDATION_ERROR` (400) - Input validation failed
 - `BAD_REQUEST` (400) - Invalid request
 - `INTERNAL_SERVER_ERROR` (500) - Server error
+
+## Enums
+
+### User Role
+
+Valid values for user role field:
+- `ADMIN` - Administrator with full system access
+- `IT` - IT staff with ticket management permissions
+- `STAFF` - Regular staff member who can create tickets
 
 ## Response Format
 

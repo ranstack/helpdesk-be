@@ -3,6 +3,7 @@ package validator
 import (
 	"fmt"
 	"helpdesk/internal/utils/errors"
+	"regexp"
 	"strings"
 	"unicode/utf8"
 )
@@ -61,6 +62,12 @@ func MaxLength(value string, max int) bool {
 func InRange(value string, min, max int) bool {
 	length := utf8.RuneCountInString(value)
 	return length >= min && length <= max
+}
+
+func ValidateEmail(value string) bool {
+	pattern := `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`
+	regex := regexp.MustCompile(pattern)
+	return regex.MatchString(value)
 }
 
 func ValidateString(v *Validator, field, value string, required bool, minLen, maxLen int) {

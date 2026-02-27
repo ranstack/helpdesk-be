@@ -39,11 +39,6 @@ type DivisionListFilter struct {
 	CreatedAt *time.Time
 }
 
-type DivisionListResponse struct {
-	Items      []DivisionResponse          `json:"items"`
-	Pagination response.PaginationResponse `json:"pagination"`
-}
-
 func (r *CreateDivisionRequest) Validate() error {
 	v := validator.New()
 

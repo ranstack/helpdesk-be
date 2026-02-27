@@ -29,6 +29,11 @@ type PaginationResponse struct {
 	TotalPages int `json:"totalPages"`
 }
 
+type ListResponse[T any] struct {
+	Items      []T                `json:"items"`
+	Pagination PaginationResponse `json:"pagination"`
+}
+
 const (
 	DefaultPage  = 1
 	DefaultLimit = 10
@@ -75,6 +80,13 @@ func ParseDate(dateStr string) (*time.Time, error) {
 	}
 
 	return &parsed, nil
+}
+
+func CalculateTotalPages(totalItems, limit int) int {
+	if totalItems == 0 {
+		return 0
+	}
+	return (totalItems + limit - 1) / limit
 }
 
 func Success(c *echo.Context, statusCode int, message string, data interface{}) error {

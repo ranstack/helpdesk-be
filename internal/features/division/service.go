@@ -13,7 +13,7 @@ import (
 )
 
 type Service interface {
-	GetAll(ctx context.Context, req *GetDivisionsQuery) (*DivisionListResponse, error)
+	GetAll(ctx context.Context, req *GetDivisionsQuery) (*response.ListResponse[DivisionResponse], error)
 	GetByID(ctx context.Context, id int) (*DivisionResponse, error)
 	Create(ctx context.Context, req *CreateDivisionRequest) (*DivisionResponse, error)
 	Update(ctx context.Context, id int, req *UpdateDivisionRequest) (*DivisionResponse, error)
@@ -32,7 +32,7 @@ func NewService(repo Repository, logger *slog.Logger) Service {
 	}
 }
 
-func (s *service) GetAll(ctx context.Context, req *GetDivisionsQuery) (*DivisionListResponse, error) {
+func (s *service) GetAll(ctx context.Context, req *GetDivisionsQuery) (*response.ListResponse[DivisionResponse], error) {
 	if req == nil {
 		req = &GetDivisionsQuery{}
 	}
@@ -48,18 +48,13 @@ func (s *service) GetAll(ctx context.Context, req *GetDivisionsQuery) (*Division
 		return nil, appErrors.Internal("Failed to retrieve divisions")
 	}
 
-	totalPages := 0
-	if totalItems > 0 {
-		totalPages = (totalItems + filter.Limit - 1) / filter.Limit
-	}
-
-	return &DivisionListResponse{
+	return &response.ListResponse[DivisionResponse]{
 		Items: ToDivisionResponses(divisions),
 		Pagination: response.PaginationResponse{
 			Page:       filter.Page,
 			Limit:      filter.Limit,
 			TotalItems: totalItems,
-			TotalPages: totalPages,
+			TotalPages: response.CalculateTotalPages(totalItems, filter.Limit),
 		},
 	}, nil
 }

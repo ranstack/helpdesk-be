@@ -13,7 +13,7 @@ import (
 )
 
 type Service interface {
-	GetAll(ctx context.Context, req *GetCategoriesQuery) (*CategoryListResponse, error)
+	GetAll(ctx context.Context, req *GetCategoriesQuery) (*response.ListResponse[CategoryResponse], error)
 	GetByID(ctx context.Context, id int) (*CategoryResponse, error)
 	Create(ctx context.Context, req *CreateCategoryRequest) (*CategoryResponse, error)
 	Update(ctx context.Context, id int, req *UpdateCategoryRequest) (*CategoryResponse, error)
@@ -32,7 +32,7 @@ func NewService(repo Repository, logger *slog.Logger) Service {
 	}
 }
 
-func (s *service) GetAll(ctx context.Context, req *GetCategoriesQuery) (*CategoryListResponse, error) {
+func (s *service) GetAll(ctx context.Context, req *GetCategoriesQuery) (*response.ListResponse[CategoryResponse], error) {
 	if req == nil {
 		req = &GetCategoriesQuery{}
 	}
@@ -48,18 +48,13 @@ func (s *service) GetAll(ctx context.Context, req *GetCategoriesQuery) (*Categor
 		return nil, appErrors.Internal("Failed to retrieve categories")
 	}
 
-	totalPages := 0
-	if totalItems > 0 {
-		totalPages = (totalItems + filter.Limit - 1) / filter.Limit
-	}
-
-	return &CategoryListResponse{
+	return &response.ListResponse[CategoryResponse]{
 		Items: ToCategoryResponses(categories),
 		Pagination: response.PaginationResponse{
 			Page:       filter.Page,
 			Limit:      filter.Limit,
 			TotalItems: totalItems,
-			TotalPages: totalPages,
+			TotalPages: response.CalculateTotalPages(totalItems, filter.Limit),
 		},
 	}, nil
 }
