@@ -3,6 +3,8 @@ package response
 import (
 	"helpdesk/internal/utils/errors"
 	"net/http"
+	"strings"
+	"time"
 
 	"github.com/labstack/echo/v5"
 )
@@ -25,6 +27,54 @@ type PaginationResponse struct {
 	Limit      int `json:"limit"`
 	TotalItems int `json:"totalItems"`
 	TotalPages int `json:"totalPages"`
+}
+
+const (
+	DefaultPage  = 1
+	DefaultLimit = 10
+	MaxLimit     = 100
+)
+
+type PaginationQuery struct {
+	Page  int `query:"page"`
+	Limit int `query:"limit"`
+}
+
+func (p *PaginationQuery) NormalizePagination() (page int, limit int, offset int) {
+	page = p.Page
+	if page == 0 {
+		page = DefaultPage
+	}
+	if page < 1 {
+		page = DefaultPage
+	}
+
+	limit = p.Limit
+	if limit == 0 {
+		limit = DefaultLimit
+	}
+	if limit < 1 {
+		limit = DefaultLimit
+	}
+	if limit > MaxLimit {
+		limit = MaxLimit
+	}
+
+	offset = (page - 1) * limit
+	return
+}
+
+func ParseDate(dateStr string) (*time.Time, error) {
+	if strings.TrimSpace(dateStr) == "" {
+		return nil, nil
+	}
+
+	parsed, err := time.Parse("2006-01-02", strings.TrimSpace(dateStr))
+	if err != nil {
+		return nil, errors.BadRequest("Date must use YYYY-MM-DD format")
+	}
+
+	return &parsed, nil
 }
 
 func Success(c *echo.Context, statusCode int, message string, data interface{}) error {

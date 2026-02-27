@@ -46,6 +46,11 @@
 ## Pagination
 - Use query parameters: `page`, `limit` for pagination controls.
 - Default: page=1, limit=10; enforce max limit (e.g., 100).
+- **Shared Pagination:** Embed `response.PaginationQuery` in feature query DTOs to reuse pagination logic.
+  - Example: `type GetCategoriesQuery struct { response.PaginationQuery; Name string; IsActive *bool; }`
+  - Call `query.NormalizePagination()` to get normalized page, limit, offset values.
+  - Constants available: `response.DefaultPage=1`, `response.DefaultLimit=10`, `response.MaxLimit=100`
+  - Use `response.ParseDate(dateStr)` helper for parsing date filters (returns *time.Time or error).
 - Repository: run COUNT query for total, then paginated SELECT with LIMIT/OFFSET.
 - Return response with items array + pagination metadata (page, limit, totalItems, totalPages).
 
@@ -72,6 +77,17 @@
   2. All CREATE methods (Create)
   3. All UPDATE methods (Update)
   4. All DELETE methods (Delete)
+
+## Code Review & DRY Principle
+- After implementing a feature, scan other features for code duplication.
+- Extract common patterns into shared utilities (e.g., response, validator, errors packages).
+- Examples of duplication to watch for:
+  - Pagination logic (normalize params, calculate offsets, totalPages)
+  - Date parsing and validation
+  - Filter/query building patterns
+  - Repetitive validation rules
+  - Common response/error mapping
+- Keep utilities in `internal/utils/` organized by concern (response, errors, validator, etc.).
 
 ## Testing
 - No automated tests expected unless explicitly requested.

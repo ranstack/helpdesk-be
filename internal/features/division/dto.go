@@ -1,4 +1,4 @@
-package category
+package division
 
 import (
 	"helpdesk/internal/utils/response"
@@ -7,30 +7,30 @@ import (
 	"time"
 )
 
-type CreateCategoryRequest struct {
+type CreateDivisionRequest struct {
 	Name string `json:"name"`
 }
 
-type UpdateCategoryRequest struct {
+type UpdateDivisionRequest struct {
 	Name     string `json:"name"`
 	IsActive bool   `json:"isActive"`
 }
 
-type CategoryResponse struct {
+type DivisionResponse struct {
 	ID        int       `json:"id"`
 	Name      string    `json:"name"`
 	IsActive  bool      `json:"isActive"`
 	CreatedAt time.Time `json:"createdAt"`
 }
 
-type GetCategoriesQuery struct {
+type GetDivisionsQuery struct {
 	response.PaginationQuery
 	Name      string `query:"name"`
 	IsActive  *bool  `query:"isActive"`
 	CreatedAt string `query:"createdAt"`
 }
 
-type CategoryListFilter struct {
+type DivisionListFilter struct {
 	Page      int
 	Limit     int
 	Offset    int
@@ -39,15 +39,15 @@ type CategoryListFilter struct {
 	CreatedAt *time.Time
 }
 
-type CategoryListResponse struct {
-	Items      []CategoryResponse          `json:"items"`
+type DivisionListResponse struct {
+	Items      []DivisionResponse          `json:"items"`
 	Pagination response.PaginationResponse `json:"pagination"`
 }
 
-func (r *CreateCategoryRequest) Validate() error {
+func (r *CreateDivisionRequest) Validate() error {
 	v := validator.New()
 
-	validator.ValidateString(v, "name", r.Name, true, 2, 20)
+	validator.ValidateString(v, "name", r.Name, true, 2, 50)
 
 	if !v.Valid() {
 		return v.ToAppError()
@@ -56,10 +56,10 @@ func (r *CreateCategoryRequest) Validate() error {
 	return nil
 }
 
-func (r *UpdateCategoryRequest) Validate() error {
+func (r *UpdateDivisionRequest) Validate() error {
 	v := validator.New()
 
-	validator.ValidateString(v, "name", r.Name, true, 2, 20)
+	validator.ValidateString(v, "name", r.Name, true, 2, 50)
 
 	if !v.Valid() {
 		return v.ToAppError()
@@ -68,7 +68,7 @@ func (r *UpdateCategoryRequest) Validate() error {
 	return nil
 }
 
-func (q *GetCategoriesQuery) Normalize() (*CategoryListFilter, error) {
+func (q *GetDivisionsQuery) Normalize() (*DivisionListFilter, error) {
 	page, limit, offset := q.NormalizePagination()
 
 	createdAt, err := response.ParseDate(q.CreatedAt)
@@ -76,7 +76,7 @@ func (q *GetCategoriesQuery) Normalize() (*CategoryListFilter, error) {
 		return nil, err
 	}
 
-	return &CategoryListFilter{
+	return &DivisionListFilter{
 		Page:      page,
 		Limit:     limit,
 		Offset:    offset,
@@ -86,19 +86,19 @@ func (q *GetCategoriesQuery) Normalize() (*CategoryListFilter, error) {
 	}, nil
 }
 
-func ToCategoryResponse(c *Category) *CategoryResponse {
-	return &CategoryResponse{
-		ID:        c.ID,
-		Name:      c.Name,
-		IsActive:  c.IsActive,
-		CreatedAt: c.CreatedAt,
+func ToDivisionResponse(d *Division) *DivisionResponse {
+	return &DivisionResponse{
+		ID:        d.ID,
+		Name:      d.Name,
+		IsActive:  d.IsActive,
+		CreatedAt: d.CreatedAt,
 	}
 }
 
-func ToCategoryResponses(categories []Category) []CategoryResponse {
-	responses := make([]CategoryResponse, len(categories))
-	for i, c := range categories {
-		responses[i] = *ToCategoryResponse(&c)
+func ToDivisionResponses(divisions []Division) []DivisionResponse {
+	responses := make([]DivisionResponse, len(divisions))
+	for i, d := range divisions {
+		responses[i] = *ToDivisionResponse(&d)
 	}
 	return responses
 }

@@ -10,6 +10,7 @@ import (
 	"helpdesk/internal/config"
 	"helpdesk/internal/database"
 	"helpdesk/internal/features/category"
+	"helpdesk/internal/features/division"
 	"helpdesk/internal/middleware"
 
 	"github.com/labstack/echo/v5"
@@ -37,6 +38,10 @@ func main() {
 	categoryService := category.NewService(categoryRepo, logger)
 	categoryHandler := category.NewHandler(categoryService)
 
+	divisionRepo := division.NewRepository(db)
+	divisionService := division.NewService(divisionRepo, logger)
+	divisionHandler := division.NewHandler(divisionService)
+
 	api := e.Group("/api/v1")
 
 	api.GET("/health", func(c *echo.Context) error {
@@ -47,6 +52,7 @@ func main() {
 	})
 
 	category.RegisterRoutes(api, categoryHandler)
+	division.RegisterRoutes(api, divisionHandler)
 	addr := ":" + cfg.AppPort
 	logger.Info("starting server", "address", addr, "app", cfg.AppName)
 	fmt.Printf("🚀 Server started on %s\n", addr)

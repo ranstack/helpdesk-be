@@ -92,7 +92,14 @@ internal/
   ├── database/
   │   └── postgres.go          # Database initialization
   ├── features/
-  │   └── category/            # Category feature (CRUD)
+  │   ├── category/            # Category feature (CRUD)
+  │   │   ├── dto.go           # Request/Response DTOs
+  │   │   ├── handler.go       # HTTP handlers
+  │   │   ├── models.go        # Domain models
+  │   │   ├── repository.go    # Data access layer
+  │   │   ├── routes.go        # Route definitions
+  │   │   └── service.go       # Business logic layer
+  │   └── division/            # Division feature (CRUD)
   │       ├── dto.go           # Request/Response DTOs
   │       ├── handler.go       # HTTP handlers
   │       ├── models.go        # Domain models
@@ -153,6 +160,26 @@ All endpoints are prefixed with `/api/v1`
 | `limit` | number | Items per page (default `10`, max `100`) |
 | `name` | string | Case-insensitive partial search by category name |
 | `isActive` | boolean | Filter active/inactive categories |
+| `createdAt` | string | Filter by creation date in `YYYY-MM-DD` |
+
+### Division Management
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/divisions` | Create a new division |
+| GET | `/divisions` | Get all divisions |
+| GET | `/divisions/:id` | Get division by ID |
+| PATCH | `/divisions/:id` | Update division |
+| DELETE | `/divisions/:id` | Delete division |
+
+`GET /divisions` supports query parameters:
+
+| Query | Type | Description |
+|-------|------|-------------|
+| `page` | number | Page number (default `1`) |
+| `limit` | number | Items per page (default `10`, max `100`) |
+| `name` | string | Case-insensitive partial search by division name |
+| `isActive` | boolean | Filter active/inactive divisions |
 | `createdAt` | string | Filter by creation date in `YYYY-MM-DD` |
 
 ### Health Check
