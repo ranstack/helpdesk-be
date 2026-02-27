@@ -40,6 +40,9 @@
   - Example: Service returns `*response.ListResponse[CategoryResponse]` with items array and pagination metadata.
   - Eliminates feature-specific ListResponse types (e.g., CategoryListResponse, DivisionListResponse).
 - List endpoints should return { items: [], pagination: { page, limit, totalItems, totalPages } }.
+- For bulk response mapping (single item → many items), use generic `response.MapResponses[T, R](items []T, mapper func(*T) *R) []R` helper.
+  - Example: `func ToUserResponses(users []User) []UserResponse { return response.MapResponses(users, ToUserResponse) }`
+  - Eliminates feature-specific bulk mapper loops.
 
 ## Validation
 - Use internal/utils/validator for request validation.

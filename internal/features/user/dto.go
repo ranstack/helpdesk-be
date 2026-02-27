@@ -136,9 +136,5 @@ func ToUserResponse(u *User) *UserResponse {
 }
 
 func ToUserResponses(users []User) []UserResponse {
-	responses := make([]UserResponse, len(users))
-	for i, u := range users {
-		responses[i] = *ToUserResponse(&u)
-	}
-	return responses
+	return response.MapResponses(users, ToUserResponse)
 }

@@ -126,3 +126,11 @@ func Error(c *echo.Context, err error) error {
 		Error:   errorInfo,
 	})
 }
+
+func MapResponses[T any, R any](items []T, mapper func(*T) *R) []R {
+	responses := make([]R, len(items))
+	for i, item := range items {
+		responses[i] = *mapper(&item)
+	}
+	return responses
+}

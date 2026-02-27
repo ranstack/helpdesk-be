@@ -91,9 +91,5 @@ func ToDivisionResponse(d *Division) *DivisionResponse {
 }
 
 func ToDivisionResponses(divisions []Division) []DivisionResponse {
-	responses := make([]DivisionResponse, len(divisions))
-	for i, d := range divisions {
-		responses[i] = *ToDivisionResponse(&d)
-	}
-	return responses
+	return response.MapResponses(divisions, ToDivisionResponse)
 }

@@ -91,9 +91,5 @@ func ToCategoryResponse(c *Category) *CategoryResponse {
 }
 
 func ToCategoryResponses(categories []Category) []CategoryResponse {
-	responses := make([]CategoryResponse, len(categories))
-	for i, c := range categories {
-		responses[i] = *ToCategoryResponse(&c)
-	}
-	return responses
+	return response.MapResponses(categories, ToCategoryResponse)
 }
