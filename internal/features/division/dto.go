@@ -13,7 +13,7 @@ type CreateDivisionRequest struct {
 
 type UpdateDivisionRequest struct {
 	Name     string `json:"name"`
-	IsActive bool   `json:"isActive"`
+	IsActive *bool  `json:"isActive"`
 }
 
 type DivisionResponse struct {

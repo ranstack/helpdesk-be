@@ -8,34 +8,36 @@ import (
 )
 
 type CreateUserRequest struct {
-	Name       string  `json:"name"`
-	Email      string  `json:"email"`
-	Password   string  `json:"password"`
-	AvatarURL  *string `json:"avatarUrl"`
-	Phone      *string `json:"phone"`
-	Role       string  `json:"role"`
-	DivisionID int     `json:"divisionId"`
+	Name       string `json:"name"`
+	Email      string `json:"email"`
+	Password   string `json:"password"`
+	Role       string `json:"role"`
+	DivisionID int    `json:"divisionId"`
 }
 
 type UpdateUserRequest struct {
 	Name       string  `json:"name"`
-	AvatarURL  *string `json:"avatarUrl"`
 	Phone      *string `json:"phone"`
 	Role       string  `json:"role"`
 	DivisionID int     `json:"divisionId"`
-	IsActive   bool    `json:"isActive"`
+	IsActive   *bool   `json:"isActive"`
 }
 
 type UserResponse struct {
-	ID         int       `json:"id"`
-	Name       string    `json:"name"`
-	Email      string    `json:"email"`
-	AvatarURL  *string   `json:"avatarUrl"`
-	Phone      *string   `json:"phone"`
-	Role       string    `json:"role"`
-	DivisionID int       `json:"divisionId"`
-	IsActive   bool      `json:"isActive"`
-	CreatedAt  time.Time `json:"createdAt"`
+	ID        int       `json:"id"`
+	Name      string    `json:"name"`
+	Email     string    `json:"email"`
+	AvatarURL *string   `json:"avatarUrl"`
+	Phone     *string   `json:"phone"`
+	Role      string    `json:"role"`
+	Division  Division  `json:"division"`
+	IsActive  bool      `json:"isActive"`
+	CreatedAt time.Time `json:"createdAt"`
+}
+
+type Division struct {
+	ID   int    `json:"id"`
+	Name string `json:"name"`
 }
 
 type GetUsersQuery struct {
@@ -121,20 +123,37 @@ func (q *GetUsersQuery) Normalize() (*UserListFilter, error) {
 	}, nil
 }
 
-func ToUserResponse(u *User) *UserResponse {
+func ToUserResponse(u *UserWithDivision, baseURL string) *UserResponse {
+	avatarURL := buildFullURL(u.AvatarURL, baseURL)
+
 	return &UserResponse{
-		ID:         u.ID,
-		Name:       u.Name,
-		Email:      u.Email,
-		AvatarURL:  u.AvatarURL,
-		Phone:      u.Phone,
-		Role:       u.Role,
-		DivisionID: u.DivisionID,
-		IsActive:   u.IsActive,
-		CreatedAt:  u.CreatedAt,
+		ID:        u.ID,
+		Name:      u.Name,
+		Email:     u.Email,
+		AvatarURL: avatarURL,
+		Phone:     u.Phone,
+		Role:      u.Role,
+		Division: Division{
+			ID:   u.DivisionID,
+			Name: u.DivisionName,
+		},
+		IsActive:  u.IsActive,
+		CreatedAt: u.CreatedAt,
 	}
 }
 
-func ToUserResponses(users []User) []UserResponse {
-	return response.MapResponses(users, ToUserResponse)
+func ToUserResponses(users []UserWithDivision, baseURL string) []UserResponse {
+	results := make([]UserResponse, len(users))
+	for i, user := range users {
+		results[i] = *ToUserResponse(&user, baseURL)
+	}
+	return results
+}
+
+func buildFullURL(relativePath *string, baseURL string) *string {
+	if relativePath == nil || *relativePath == "" {
+		return nil
+	}
+	fullURL := baseURL + *relativePath
+	return &fullURL
 }

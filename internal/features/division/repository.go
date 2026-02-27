@@ -17,7 +17,7 @@ type Repository interface {
 	GetByName(ctx context.Context, name string) (*Division, error)
 	Exists(ctx context.Context, id int) (bool, error)
 	Create(ctx context.Context, name string) (*Division, error)
-	Update(ctx context.Context, id int, name string) (*Division, error)
+	Update(ctx context.Context, id int, name string, isActive bool) (*Division, error)
 	Delete(ctx context.Context, id int) error
 }
 
@@ -114,11 +114,11 @@ func (r *repository) Create(ctx context.Context, name string) (*Division, error)
 	return &division, nil
 }
 
-func (r *repository) Update(ctx context.Context, id int, name string) (*Division, error) {
-	query := `UPDATE divisions SET name = $1 WHERE id = $2 RETURNING id, name, is_active, created_at`
+func (r *repository) Update(ctx context.Context, id int, name string, isActive bool) (*Division, error) {
+	query := `UPDATE divisions SET name = $1, is_active = $2 WHERE id = $3 RETURNING id, name, is_active, created_at`
 
 	var division Division
-	err := r.db.QueryRowxContext(ctx, query, name, id).StructScan(&division)
+	err := r.db.QueryRowxContext(ctx, query, name, isActive, id).StructScan(&division)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil

@@ -17,7 +17,7 @@ type Repository interface {
 	GetByName(ctx context.Context, name string) (*Category, error)
 	Exists(ctx context.Context, id int) (bool, error)
 	Create(ctx context.Context, name string) (*Category, error)
-	Update(ctx context.Context, id int, name string) (*Category, error)
+	Update(ctx context.Context, id int, name string, isActive bool) (*Category, error)
 	Delete(ctx context.Context, id int) error
 }
 
@@ -114,11 +114,11 @@ func (r *repository) Create(ctx context.Context, name string) (*Category, error)
 	return &category, nil
 }
 
-func (r *repository) Update(ctx context.Context, id int, name string) (*Category, error) {
-	query := `UPDATE categories SET name = $1 WHERE id = $2 RETURNING id, name, is_active, created_at`
+func (r *repository) Update(ctx context.Context, id int, name string, isActive bool) (*Category, error) {
+	query := `UPDATE categories SET name = $1, is_active = $2 WHERE id = $3 RETURNING id, name, is_active, created_at`
 
 	var category Category
-	err := r.db.QueryRowxContext(ctx, query, name, id).StructScan(&category)
+	err := r.db.QueryRowxContext(ctx, query, name, isActive, id).StructScan(&category)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil

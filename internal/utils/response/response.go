@@ -6,14 +6,19 @@ import (
 	"strings"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v5"
 )
 
+type Meta struct {
+	Timestamp string `json:"timestamp"`
+}
+
 type Response struct {
-	Success bool        `json:"success"`
 	Message string      `json:"message,omitempty"`
 	Data    interface{} `json:"data,omitempty"`
 	Error   *ErrorInfo  `json:"error,omitempty"`
+	Meta    *Meta       `json:"meta"`
 }
 
 type ErrorInfo struct {
@@ -89,11 +94,33 @@ func CalculateTotalPages(totalItems, limit int) int {
 	return (totalItems + limit - 1) / limit
 }
 
+func GetRequestID(c *echo.Context) string {
+	if c == nil {
+		return uuid.New().String()
+	}
+	if id, ok := c.Get("requestId").(string); ok {
+		return id
+	}
+	return uuid.New().String()
+}
+
+func SetRequestID(c *echo.Context, requestID string) {
+	if c != nil {
+		c.Set("requestId", requestID)
+	}
+}
+
+func buildMeta(c *echo.Context) *Meta {
+	return &Meta{
+		Timestamp: time.Now().UTC().Format(time.RFC3339),
+	}
+}
+
 func Success(c *echo.Context, statusCode int, message string, data interface{}) error {
 	return c.JSON(statusCode, Response{
-		Success: true,
 		Message: message,
 		Data:    data,
+		Meta:    buildMeta(c),
 	})
 }
 
@@ -122,8 +149,8 @@ func Error(c *echo.Context, err error) error {
 	}
 
 	return c.JSON(appErr.StatusCode, Response{
-		Success: false,
-		Error:   errorInfo,
+		Error: errorInfo,
+		Meta:  buildMeta(c),
 	})
 }
 

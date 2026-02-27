@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"net/http"
 	"runtime/debug"
+	"time"
 
 	"github.com/labstack/echo/v5"
 )
@@ -29,9 +30,11 @@ func Recovery(logger *slog.Logger) echo.MiddlewareFunc {
 					)
 
 					c.JSON(http.StatusInternalServerError, response.Response{
-						Success: false,
 						Error: &response.ErrorInfo{
 							Message: "Internal server error",
+						},
+						Meta: &response.Meta{
+							Timestamp: time.Now().UTC().Format(time.RFC3339),
 						},
 					})
 				}

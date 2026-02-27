@@ -15,6 +15,7 @@ import (
 type Service interface {
 	GetAll(ctx context.Context, req *GetDivisionsQuery) (*response.ListResponse[DivisionResponse], error)
 	GetByID(ctx context.Context, id int) (*DivisionResponse, error)
+	ValidateForAssignment(ctx context.Context, id int) error
 	Create(ctx context.Context, req *CreateDivisionRequest) (*DivisionResponse, error)
 	Update(ctx context.Context, id int, req *UpdateDivisionRequest) (*DivisionResponse, error)
 	Delete(ctx context.Context, id int) error
@@ -77,6 +78,28 @@ func (s *service) GetByID(ctx context.Context, id int) (*DivisionResponse, error
 	return ToDivisionResponse(division), nil
 }
 
+func (s *service) ValidateForAssignment(ctx context.Context, id int) error {
+	if id <= 0 {
+		return appErrors.BadRequest("Invalid division ID")
+	}
+
+	division, err := s.repo.GetByID(ctx, id)
+	if err != nil {
+		s.logger.Error("failed to get division", "error", err, "id", id)
+		return appErrors.Internal("Failed to validate division")
+	}
+
+	if division == nil {
+		return appErrors.NotFound("Division")
+	}
+
+	if !division.IsActive {
+		return appErrors.BadRequest("Division is not active")
+	}
+
+	return nil
+}
+
 func (s *service) Create(ctx context.Context, req *CreateDivisionRequest) (*DivisionResponse, error) {
 	if err := req.Validate(); err != nil {
 		s.logger.Warn("validation failed", "error", err)
@@ -137,7 +160,21 @@ func (s *service) Update(ctx context.Context, id int, req *UpdateDivisionRequest
 		return nil, appErrors.AlreadyExists("Division with this name")
 	}
 
-	division, err := s.repo.Update(ctx, id, name)
+	currentDivision, err := s.repo.GetByID(ctx, id)
+	if err != nil {
+		s.logger.Error("failed to get current division", "error", err, "id", id)
+		return nil, appErrors.Internal("Failed to update division")
+	}
+	if currentDivision == nil {
+		return nil, appErrors.NotFound("Division")
+	}
+
+	isActive := currentDivision.IsActive
+	if req.IsActive != nil {
+		isActive = *req.IsActive
+	}
+
+	division, err := s.repo.Update(ctx, id, name, isActive)
 	if err != nil {
 		s.logger.Error("failed to update division", "error", err, "id", id)
 		if strings.Contains(err.Error(), "already exists") {

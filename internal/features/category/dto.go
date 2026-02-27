@@ -13,7 +13,7 @@ type CreateCategoryRequest struct {
 
 type UpdateCategoryRequest struct {
 	Name     string `json:"name"`
-	IsActive bool   `json:"isActive"`
+	IsActive *bool  `json:"isActive"`
 }
 
 type CategoryResponse struct {

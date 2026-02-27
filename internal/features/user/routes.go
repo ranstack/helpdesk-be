@@ -9,5 +9,6 @@ func RegisterRoutes(g *echo.Group, handler *Handler) {
 	users.GET("/:id", handler.GetByID)
 	users.POST("", handler.Create)
 	users.PATCH("/:id", handler.Update)
+	users.PATCH("/:id/avatar", handler.UpdateAvatar)
 	users.DELETE("/:id", handler.Delete)
 }

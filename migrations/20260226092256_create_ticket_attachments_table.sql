@@ -2,7 +2,7 @@
 CREATE TABLE ticket_attachments (
     id SERIAL PRIMARY KEY,
     ticket_id INT NOT NULL REFERENCES tickets(id) ON DELETE CASCADE,
-    uploaded_by INT NOT NULL REFERENCES users(id),
+    uploaded_by INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     file_url TEXT NOT NULL,
     type VARCHAR(50) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP

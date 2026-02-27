@@ -13,6 +13,7 @@ import (
 	"helpdesk/internal/features/division"
 	"helpdesk/internal/features/user"
 	"helpdesk/internal/middleware"
+	"helpdesk/internal/utils/uploads"
 
 	"github.com/labstack/echo/v5"
 )
@@ -29,8 +30,14 @@ func main() {
 
 	logger.Info("connected to database", "host", cfg.DBHost, "database", cfg.DBName)
 
+	if err := uploads.EnsureUploadDirs(); err != nil {
+		log.Fatalf("failed to create upload directories: %v", err)
+	}
+	logger.Info("upload directories ready")
+
 	e := echo.New()
 
+	e.Use(middleware.RequestID)
 	e.Use(middleware.Recovery(logger))
 	e.Use(middleware.Logger(logger))
 	e.Use(middleware.CORS())
@@ -44,8 +51,10 @@ func main() {
 	divisionHandler := division.NewHandler(divisionService)
 
 	userRepo := user.NewRepository(db)
-	userService := user.NewService(userRepo, logger)
+	userService := user.NewService(userRepo, divisionService, logger, cfg.BaseURL)
 	userHandler := user.NewHandler(userService)
+
+	e.Static("/uploads", "uploads")
 
 	api := e.Group("/api/v1")
 

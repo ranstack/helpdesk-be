@@ -137,7 +137,21 @@ func (s *service) Update(ctx context.Context, id int, req *UpdateCategoryRequest
 		return nil, appErrors.AlreadyExists("Category with this name")
 	}
 
-	category, err := s.repo.Update(ctx, id, name)
+	currentCategory, err := s.repo.GetByID(ctx, id)
+	if err != nil {
+		s.logger.Error("failed to get current category", "error", err, "id", id)
+		return nil, appErrors.Internal("Failed to update category")
+	}
+	if currentCategory == nil {
+		return nil, appErrors.NotFound("Category")
+	}
+
+	isActive := currentCategory.IsActive
+	if req.IsActive != nil {
+		isActive = *req.IsActive
+	}
+
+	category, err := s.repo.Update(ctx, id, name, isActive)
 	if err != nil {
 		s.logger.Error("failed to update category", "error", err, "id", id)
 		if strings.Contains(err.Error(), "already exists") {

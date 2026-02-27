@@ -8,6 +8,7 @@ import (
 type Config struct {
 	AppName string
 	AppPort string
+	BaseURL string
 
 	DBHost     string
 	DBPort     string
@@ -21,6 +22,7 @@ func Load() *Config {
 	return &Config{
 		AppName: getEnv("APP_NAME", "Helpdesk API"),
 		AppPort: getEnv("APP_PORT", "8080"),
+		BaseURL: getEnv("BASE_URL", "http://localhost:8080"),
 
 		DBHost:     getEnv("DB_HOST", "localhost"),
 		DBPort:     getEnv("DB_PORT", "5432"),
