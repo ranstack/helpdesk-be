@@ -9,12 +9,13 @@ import (
 	"strings"
 
 	appErrors "helpdesk/internal/utils/errors"
+	"helpdesk/internal/utils/response"
 )
 
 type Service interface {
-	Create(ctx context.Context, req *CreateCategoryRequest) (*CategoryResponse, error)
+	GetAll(ctx context.Context, req *GetCategoriesQuery) (*CategoryListResponse, error)
 	GetByID(ctx context.Context, id int) (*CategoryResponse, error)
-	GetAll(ctx context.Context) ([]CategoryResponse, error)
+	Create(ctx context.Context, req *CreateCategoryRequest) (*CategoryResponse, error)
 	Update(ctx context.Context, id int, req *UpdateCategoryRequest) (*CategoryResponse, error)
 	Delete(ctx context.Context, id int) error
 }
@@ -29,6 +30,56 @@ func NewService(repo Repository, logger *slog.Logger) Service {
 		repo:   repo,
 		logger: logger,
 	}
+}
+
+func (s *service) GetAll(ctx context.Context, req *GetCategoriesQuery) (*CategoryListResponse, error) {
+	if req == nil {
+		req = &GetCategoriesQuery{}
+	}
+
+	filter, err := req.Normalize()
+	if err != nil {
+		return nil, err
+	}
+
+	categories, totalItems, err := s.repo.GetAll(ctx, filter)
+	if err != nil {
+		s.logger.Error("failed to get categories", "error", err)
+		return nil, appErrors.Internal("Failed to retrieve categories")
+	}
+
+	totalPages := 0
+	if totalItems > 0 {
+		totalPages = (totalItems + filter.Limit - 1) / filter.Limit
+	}
+
+	return &CategoryListResponse{
+		Items: ToCategoryResponses(categories),
+		Pagination: response.PaginationResponse{
+			Page:       filter.Page,
+			Limit:      filter.Limit,
+			TotalItems: totalItems,
+			TotalPages: totalPages,
+		},
+	}, nil
+}
+
+func (s *service) GetByID(ctx context.Context, id int) (*CategoryResponse, error) {
+	if id <= 0 {
+		return nil, appErrors.BadRequest("Invalid category ID")
+	}
+
+	category, err := s.repo.GetByID(ctx, id)
+	if err != nil {
+		s.logger.Error("failed to get category", "error", err, "id", id)
+		return nil, appErrors.Internal("Failed to retrieve category")
+	}
+
+	if category == nil {
+		return nil, appErrors.NotFound("Category")
+	}
+
+	return ToCategoryResponse(category), nil
 }
 
 func (s *service) Create(ctx context.Context, req *CreateCategoryRequest) (*CategoryResponse, error) {
@@ -59,34 +110,6 @@ func (s *service) Create(ctx context.Context, req *CreateCategoryRequest) (*Cate
 
 	s.logger.Info("category created", "id", category.ID, "name", category.Name)
 	return ToCategoryResponse(category), nil
-}
-
-func (s *service) GetByID(ctx context.Context, id int) (*CategoryResponse, error) {
-	if id <= 0 {
-		return nil, appErrors.BadRequest("Invalid category ID")
-	}
-
-	category, err := s.repo.GetByID(ctx, id)
-	if err != nil {
-		s.logger.Error("failed to get category", "error", err, "id", id)
-		return nil, appErrors.Internal("Failed to retrieve category")
-	}
-
-	if category == nil {
-		return nil, appErrors.NotFound("Category")
-	}
-
-	return ToCategoryResponse(category), nil
-}
-
-func (s *service) GetAll(ctx context.Context) ([]CategoryResponse, error) {
-	categories, err := s.repo.GetAll(ctx)
-	if err != nil {
-		s.logger.Error("failed to get categories", "error", err)
-		return nil, appErrors.Internal("Failed to retrieve categories")
-	}
-
-	return ToCategoryResponses(categories), nil
 }
 
 func (s *service) Update(ctx context.Context, id int, req *UpdateCategoryRequest) (*CategoryResponse, error) {

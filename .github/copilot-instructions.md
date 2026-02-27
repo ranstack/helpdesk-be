@@ -12,12 +12,18 @@
 - Prefer explicit error handling; avoid panic.
 - No comments unless absolutely necessary.
 - Use ASCII only in source files unless a file already uses Unicode.
+- In dto.go files: organize with constants first, then all type definitions, then methods, then functions.
 
 ## Architecture Rules
 - Handlers: HTTP request/response only; no business logic.
 - Services: validation, business rules, and error translation.
 - Repositories: database access only; no validation.
 - Do not bypass service layer from handlers.
+
+## REST API Conventions
+- Use PATCH for partial updates (only changed fields sent).
+- Use PUT only for full resource replacement (all fields required).
+- JSON tags must use camelCase (e.g., `json:"createdAt"` not `json:"created_at"`).
 
 ## Error Handling
 - Use AppError helpers from internal/utils/errors.
@@ -28,14 +34,31 @@
 - Use internal/utils/response helpers for JSON responses.
 - Success response: { success, message, data }.
 - Error response: { success: false, error: { code, message, details } }.
+- Prefer reusing a shared response DTO per feature (for example, one `CategoryResponse`) to reduce boilerplate.
+- Add endpoint-specific response DTOs only when the response contract is intentionally different.
+- For paginated lists: use `response.PaginationResponse` from internal/utils/response for consistent metadata across features.
+- List endpoints should return { items: [], pagination: { page, limit, totalItems, totalPages } }.
 
 ## Validation
 - Use internal/utils/validator for request validation.
 - Return Validation errors with details map when invalid.
 
+## Pagination
+- Use query parameters: `page`, `limit` for pagination controls.
+- Default: page=1, limit=10; enforce max limit (e.g., 100).
+- Repository: run COUNT query for total, then paginated SELECT with LIMIT/OFFSET.
+- Return response with items array + pagination metadata (page, limit, totalItems, totalPages).
+
 ## Database
 - Use sqlx with PostgreSQL.
 - Keep queries in repositories; no SQL in services or handlers.
+- Keep `SELECT`/`RETURNING` columns aligned with model `db` tags for fields exposed in responses.
+- For text fields requiring case-insensitive uniqueness (e.g., name, email), add unique index on LOWER(column).
+- Use `ILIKE` for case-insensitive searches in WHERE clauses.
+
+## Migrations
+- Use Goose for database migrations.
+- Project is not production yet: update existing migrations directly, then reset/re-apply rather than creating new migrations for schema changes.
 
 ## Dependencies
 - Avoid adding new libraries unless required.
@@ -44,6 +67,11 @@
 ## Files and Structure
 - New features live in internal/features/<feature>.
 - Each feature should have dto.go, handler.go, models.go, repository.go, routes.go, service.go.
+- Use standard CRUD method order in interfaces and implementations:
+  1. All GET methods (GetAll, GetByID, GetByName, Exists, etc.)
+  2. All CREATE methods (Create)
+  3. All UPDATE methods (Update)
+  4. All DELETE methods (Delete)
 
 ## Testing
 - No automated tests expected unless explicitly requested.

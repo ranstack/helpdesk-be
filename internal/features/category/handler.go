@@ -19,19 +19,18 @@ func NewHandler(service Service) *Handler {
 	}
 }
 
-func (h *Handler) Create(c *echo.Context) error {
-	var req CreateCategoryRequest
-
+func (h *Handler) GetAll(c *echo.Context) error {
+	var req GetCategoriesQuery
 	if err := c.Bind(&req); err != nil {
-		return response.Error(c, err)
+		return response.Error(c, errors.BadRequest("Invalid query parameters"))
 	}
 
-	category, err := h.service.Create(c.Request().Context(), &req)
+	categories, err := h.service.GetAll(c.Request().Context(), &req)
 	if err != nil {
 		return response.Error(c, err)
 	}
 
-	return response.Created(c, "Category created successfully", category)
+	return response.OK(c, "Categories retrieved successfully", categories)
 }
 
 func (h *Handler) GetByID(c *echo.Context) error {
@@ -49,13 +48,19 @@ func (h *Handler) GetByID(c *echo.Context) error {
 	return response.OK(c, "Category retrieved successfully", category)
 }
 
-func (h *Handler) GetAll(c *echo.Context) error {
-	categories, err := h.service.GetAll(c.Request().Context())
+func (h *Handler) Create(c *echo.Context) error {
+	var req CreateCategoryRequest
+
+	if err := c.Bind(&req); err != nil {
+		return response.Error(c, err)
+	}
+
+	category, err := h.service.Create(c.Request().Context(), &req)
 	if err != nil {
 		return response.Error(c, err)
 	}
 
-	return response.OK(c, "Categories retrieved successfully", categories)
+	return response.Created(c, "Category created successfully", category)
 }
 
 func (h *Handler) Update(c *echo.Context) error {

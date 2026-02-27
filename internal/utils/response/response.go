@@ -20,6 +20,13 @@ type ErrorInfo struct {
 	Details map[string]interface{} `json:"details,omitempty"`
 }
 
+type PaginationResponse struct {
+	Page       int `json:"page"`
+	Limit      int `json:"limit"`
+	TotalItems int `json:"totalItems"`
+	TotalPages int `json:"totalPages"`
+}
+
 func Success(c *echo.Context, statusCode int, message string, data interface{}) error {
 	return c.JSON(statusCode, Response{
 		Success: true,

@@ -6,5 +6,7 @@ CREATE TABLE categories (
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE UNIQUE INDEX idx_categories_name_lower_unique ON categories (LOWER(name));
+
 -- +goose Down
 DROP TABLE categories;

@@ -142,8 +142,18 @@ All endpoints are prefixed with `/api/v1`
 | POST | `/categories` | Create a new category |
 | GET | `/categories` | Get all categories |
 | GET | `/categories/:id` | Get category by ID |
-| PUT | `/categories/:id` | Update category |
+| PATCH | `/categories/:id` | Update category |
 | DELETE | `/categories/:id` | Delete category |
+
+`GET /categories` supports query parameters:
+
+| Query | Type | Description |
+|-------|------|-------------|
+| `page` | number | Page number (default `1`) |
+| `limit` | number | Items per page (default `10`, max `100`) |
+| `name` | string | Case-insensitive partial search by category name |
+| `isActive` | boolean | Filter active/inactive categories |
+| `createdAt` | string | Filter by creation date in `YYYY-MM-DD` |
 
 ### Health Check
 
